@@ -17,6 +17,7 @@ package com.proofpoint.discovery;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
+import com.google.inject.util.Modules;
 import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.discovery.client.DiscoveryModule;
 import com.proofpoint.discovery.client.announce.Announcer;
@@ -54,7 +55,7 @@ public class Main
                             new ReportingModule(),
                             new ReportingClientModule(),
                             new TraceTokenModule(),
-                            new DiscoveryModule()
+                            Modules.override(new DiscoveryModule()).with(new LocalOverrideDiscoveryModule())
                     )
                     .withApplicationDefaults(ImmutableMap.of(
                             "http-server.admin.port", "4121",
