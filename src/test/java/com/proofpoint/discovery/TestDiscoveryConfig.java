@@ -37,6 +37,7 @@ public class TestDiscoveryConfig
     public void testDefaults()
     {
         ConfigAssertions.assertRecordedDefaults(ConfigAssertions.recordDefaults(DiscoveryConfig.class)
+                .setDynamicEnabled(true)
                 .setMaxAge(new Duration(90, TimeUnit.SECONDS))
                 .setGeneralPoolMapTarget("general")
                 .setGeneralPoolLegacyReplicationMode(ReplicationMode.PHASE_ONE)
@@ -49,6 +50,7 @@ public class TestDiscoveryConfig
     public void testExplicitPropertyMappings()
     {
         Map<String, String> properties = ImmutableMap.<String, String>builder()
+                .put("discovery.dynamic.enabled", "false")
                 .put("discovery.max-age", "1m")
                 .put("reporting.tag.datacenter", "SNV")
                 .put("discovery.general-pool.legacy-replication-mode", "phase_two")
@@ -58,6 +60,7 @@ public class TestDiscoveryConfig
                 .build();
 
         DiscoveryConfig expected = new DiscoveryConfig()
+                .setDynamicEnabled(false)
                 .setMaxAge(new Duration(1, TimeUnit.MINUTES))
                 .setGeneralPoolMapTarget("SNV")
                 .setGeneralPoolLegacyReplicationMode(ReplicationMode.PHASE_TWO)

@@ -32,12 +32,26 @@ import java.util.stream.Collectors;
 
 public class DiscoveryConfig
 {
+    private boolean dynamicEnabled = true;
     private Duration maxAge = new Duration(90, TimeUnit.SECONDS);
     private String mapTarget = "general";
     private ReplicationMode generalPoolLegacyReplicationMode = ReplicationMode.PHASE_ONE;
     private StringSet proxyProxiedTypes = StringSet.of();
     private String proxyEnvironment = null;
     private UriSet proxyUris = UriSet.of();
+
+    public boolean isDynamicEnabled()
+    {
+        return dynamicEnabled;
+    }
+
+    @Config("discovery.dynamic.enabled")
+    @ConfigDescription("Whether dynamic announcements are enabled")
+    public DiscoveryConfig setDynamicEnabled(boolean dynamicEnabled)
+    {
+        this.dynamicEnabled = dynamicEnabled;
+        return this;
+    }
 
     @NotNull
     public Duration getMaxAge()

@@ -49,46 +49,25 @@ public class DiscoveryServerModule
 
         discoveryBinder(binder).bindHttpAnnouncement("discovery");
 
+        DiscoveryConfig discoveryConfig = buildConfigObject(DiscoveryConfig.class);
+
         // dynamic announcements
-        jaxrsBinder(binder).bind(DynamicAnnouncementResource.class).withApplicationPrefix();
-        binder.bind(DynamicStore.class).to(Key.get(DistributedStore.class, ForDynamicStore.class)).in(Scopes.SINGLETON);
-        binder.install(new ReplicatedStoreModule("dynamic", ForDynamicStore.class, InMemoryStore.class));
+        if (discoveryConfig.isDynamicEnabled()) {
+            jaxrsBinder(binder).bind(DynamicAnnouncementResource.class).withApplicationPrefix();
+            binder.bind(DynamicStore.class).to(Key.get(DistributedStore.class, ForDynamicStore.class)).in(Scopes.SINGLETON);
+            binder.install(new ReplicatedStoreModule("dynamic", ForDynamicStore.class, InMemoryStore.class));
+        } else {
+            binder.bind(DynamicStore.class).to(NullDynamicStore.class).in(Scopes.SINGLETON);
+        }
 
         // config-based static announcements
         binder.bind(ConfigStore.class).in(Scopes.SINGLETON);
         bindConfig(binder).bind(ConfigStoreConfig.class);
 
         // proxy announcements
-        DiscoveryConfig discoveryConfig = buildConfigObject(DiscoveryConfig.class);
         if (!discoveryConfig.getProxyUris().isEmpty()) {
             httpClientBinder(binder).bindBalancingHttpClient("discovery.proxy", ForProxyStore.class, discoveryConfig.getProxyUris());
         }
         binder.bind(ProxyStore.class).in(Scopes.SINGLETON);
-    }
-
-    @Singleton
-    @Provides
-    public static ServiceSelector getServiceInventory(final ServiceInventory inventory, final NodeInfo nodeInfo)
-    {
-        return new ServiceSelector()
-        {
-            @Override
-            public String getType()
-            {
-                return "discovery";
-            }
-
-            @Override
-            public String getPool()
-            {
-                return nodeInfo.getPool();
-            }
-
-            @Override
-            public List<ServiceDescriptor> selectAllServices()
-            {
-                return ImmutableList.copyOf(inventory.getServiceDescriptors(getType()));
-            }
-        };
     }
 }
